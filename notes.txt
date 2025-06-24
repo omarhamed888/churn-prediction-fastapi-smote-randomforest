@@ -1,0 +1,3 @@
+to activate the env
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+venv\Scripts\Activate   
