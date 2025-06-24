@@ -13,10 +13,9 @@ SECRET_KEY_TOKEN = os.getenv('SECRET_KEY_TOKEN')
 
 #
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODELS_FOLDER_PATH = os.path.join(BASE_DIR, "models")
+MODELS_FOLDER_PATH = os.path.join(BASE_DIR, "dump_files")
 
 
 # Models
-preprocessor = joblib.load(os.path.join(MODELS_FOLDER_PATH, 'preprocessor.pkl'))
-forest_model = joblib.load(os.path.join(MODELS_FOLDER_PATH, 'forest_tuned.pkl'))
-xgboost_model = joblib.load(os.path.join(MODELS_FOLDER_PATH, 'xgb-tuned.pkl'))
+preprocessor = joblib.load(os.path.join(MODELS_FOLDER_PATH, 'preprocessor.joblib'))
+forest_model = joblib.load(os.path.join(MODELS_FOLDER_PATH, 'best_rf_model.joblib'))

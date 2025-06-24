@@ -1,41 +1,41 @@
-from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.security import APIKeyHeader
+from fastapi.middleware.cors import CORSMiddleware
+from utils.inference import predict_new
+from utils.config import APP_NAME, VERSION, SECRET_KEY_TOKEN, preprocessor, forest_model
+from utils.CustomerData import CustomerData
 
-app = FastAPI()
+app = FastAPI(title=APP_NAME, version=VERSION)
+app.add_middleware(
+   CORSMiddleware,
+   allow_origins=["*"],
+   allow_methods=["*"],
+   allow_headers=["*"],
+)
 
-@app.get("/", response_class=HTMLResponse)
-async def read_root():
-    return """
-    <html>
-        <head>
-            <title>FastAPI Badge</title>
-            <style>
-                body { background: #f4f4f4; font-family: Arial, sans-serif; }
-                .badge {
-                    margin: 100px auto;
-                    width: 350px;
-                    padding: 30px;
-                    background: #fff;
-                    border-radius: 16px;
-                    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-                    text-align: center;
-                }
-                .badge-title {
-                    font-size: 2em;
-                    color: #009688;
-                    margin-bottom: 10px;
-                }
-                .badge-desc {
-                    color: #555;
-                    font-size: 1.1em;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="badge">
-                <div class="badge-title">🚀 FastAPI is Running!</div>
-                <div class="badge-desc">Your FastAPI app is live.<br>Try adding endpoints or explore the <a href="/docs">API docs</a>.</div>
-            </div>
-        </body>
-    </html>
-    """
+@app.get('/', tags=['General'])
+async def home():
+    return {
+        "mesage": f"Welcome to {APP_NAME} API v{VERSION}"
+    }
+
+
+api_key_header = APIKeyHeader(name='X-API-Key')
+async def verify_api_key(api_key: str=Depends(api_key_header)):
+    if api_key != SECRET_KEY_TOKEN:
+        raise HTTPException(status_code=403, detail="You are not authorized to use this API")
+    return api_key
+
+
+
+@app.post('/predict/forest', tags=['Models'])
+async def predict_forest(data: CustomerData, api_key: str=Depends(verify_api_key)) -> dict:
+
+    try:
+        result = predict_new(data=data, preprocessor=preprocessor, model=forest_model)
+        return result
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
